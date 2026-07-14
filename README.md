@@ -141,6 +141,16 @@ npm run android:release
 npm run android:install
 ```
 
+### Build from GitHub (phone-only workflow)
+You do not need a powerful local setup to produce an APK. Push your changes to GitHub and let the workflow handle the build:
+
+1. Push to the `main` or `develop` branch, or run the workflow manually from the Actions tab.
+2. Open the completed `Android Build & Test` run in GitHub Actions.
+3. Download the `forgelink-debug-apk` artifact from the run summary.
+4. Transfer the APK to your phone and install it.
+
+This uses GitHub-hosted runners for the heavy Android build work, so your phone only needs to receive the finished APK.
+
 ### Running Tests
 ```bash
 npm test              # Run all tests

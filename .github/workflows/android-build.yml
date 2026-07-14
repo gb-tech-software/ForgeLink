@@ -1,10 +1,15 @@
 name: Android Build & Test
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -30,22 +35,38 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager --sdk_root=$ANDROID_HOME "platforms;android-34" "build-tools;34.0.0" "platform-tools"
       - name: Create local.properties
         run: |
           echo "sdk.dir=${ANDROID_HOME}" > android/local.properties
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
+      - name: Generate Gradle wrapper
+        working-directory: android
+        run: |
+          if [ ! -x ./gradlew ]; then
+            gradle wrapper --gradle-version 8.10.2
+          fi
+          chmod +x ./gradlew
       - name: Build Android (Debug)
         working-directory: android
         run: ./gradlew assembleDebug --stacktrace
-      - name: Build Android (Release)
-        working-directory: android
-        run: ./gradlew assembleRelease --stacktrace
-      - name: Upload APK
+      - name: Upload Debug APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: forgelink-debug.apk
+          name: forgelink-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Build Android (Release)
+        working-directory: android
+        run: ./gradlew assembleRelease --stacktrace
+      - name: Upload Release APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forgelink-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
