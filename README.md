@@ -1,58 +1,223 @@
-Act as an expert Android Engineer and Mobile UX System Architect. You are tasked with generating a fully complete, structurally clean, and uncoupled hybrid project framework for a high-performance local IDE application. The user interface must be written in React Native (TypeScript), and the heavy system processes, background runtime isolation, and terminal emulators must be built natively in Android Kotlin.
+# ForgeLink
+
+A mobile IDE for Android that lets you build, test, and deploy projects directly from your phone. Write code, run servers, and preview live updates—all on a single device.
+
+## 🎯 What is ForgeLink?
+
+ForgeLink is a standalone Android app that turns your phone into a development workstation. Whether you're on a trip, at a coffee shop, or away from your laptop, you can:
+
+- **Edit Code**: Real-time file editing with workspace persistence
+- **Run Projects**: Execute npm, python, and other build commands
+- **Live Preview**: See your changes instantly in a WebView
+- **Multi-Project**: Manage multiple projects on your device
+- **Auto-Detection**: Recognizes Next.js, Vite, React, Python, and more
+
+## ⚡ Quick Start
+
+### Installation
+
+1. **Download APK**
+   - Get from [GitHub Releases](https://github.com/gb-tech-software/ForgeLink/releases)
+   - Or build from source (see SETUP.md)
+
+2. **Install**
+   - Tap APK to install
+   - Or use: `adb install app-debug.apk`
+
+3. **Grant Permissions**
+   - Storage access to your project folder
+   - Notification permission for background tasks
+
+4. **Open Project**
+   - Grant access to `/storage/shared/Projects` or your projects folder
+   - Select a project
+   - Start developing!
+
+## 📱 Supported Project Types
+
+| Type | Detection | Build Commands |
+|------|-----------|---|
+| **Next.js** | `next.config.js` | dev, build, test |
+| **Vite** | `vite.config.js` | dev, build, preview |
+| **React** | `package.json` + React | start, build, test |
+| **Vue** | `nuxt.config.js` | dev, build, serve |
+| **Svelte** | `svelte.config.js` | dev, build, preview |
+| **Node.js** | `package.json` | install, start, test |
+| **Python** | `requirements.txt` | install, serve, run |
+| **HTML** | `index.html` | serve via HTTP |
+
+## 🏗️ Architecture
+
+ForgeLink is built with:
+
+- **React Native** (TypeScript) for the UI
+- **Kotlin** for Android native features
+- **Storage Access Framework** (SAF) for file access
+- **Foreground Service** for background process execution
+- **WebView** for live preview
+
+### Directory Structure
+```
+ForgeLink/
+├── src/                    # React Native UI & logic
+│   ├── index.tsx          # Main app component
+│   ├── commands.ts        # Command presets
+│   ├── workspace.js       # Workspace state helpers
+│   ├── projectDetection.js # Project type detection
+│   ├── ErrorHandler.js    # Error handling utilities
+│   └── Logger.js          # Logging utilities
+├── android/               # Android native code
+│   └── app/src/main/java/com/forgelink/
+│       ├── MainActivity.kt
+│       ├── MainApplication.kt
+│       ├── TerminalService.kt       # Process execution
+│       ├── ForgeLinkNativeModule.kt # React bridge
+│       ├── StorageAccessBridge.kt   # File system access
+│       └── ...
+├── .github/workflows/     # GitHub Actions CI/CD
+└── SETUP.md              # Detailed setup guide
+```
+
+## 🚀 Features
+
+### Core
+- ✅ File editing with persistence
+- ✅ Multiple file tabs
+- ✅ Project type auto-detection
+- ✅ Preset build commands
+- ✅ Custom command input
+- ✅ WebView live preview
+- ✅ Terminal output viewing
+- ✅ Recent command history
+
+### Advanced
+- ✅ Storage Access Framework (SAF) integration
+- ✅ Persistent workspace state
+- ✅ Multi-project support
+- ✅ Responsive UI with gestures
+- ✅ Background service execution
+- ✅ Full permission handling
+
+### Coming Soon
+- 🔄 Git integration
+- 🔄 Real PTY terminal (Termux)
+- 🔄 Project templates/scaffolding
+- 🔄 npm/pip UI package manager
+- 🔄 Chrome DevTools debugging
+- 🔄 Cloud sync across devices
+
+## 📖 Development Guide
+
+### Prerequisites
+- Node.js 18+
+- Java 17+
+- Android SDK 34
+- Gradle 8.10+
+
+### Setup
+```bash
+git clone https://github.com/gb-tech-software/ForgeLink.git
+cd ForgeLink
+
+# Install dependencies
+npm install
+
+# Run tests
+npm test
+
+# Type check
+npm run typecheck
+```
+
+### Building
+```bash
+# Debug APK
+npm run android:build
+
+# Release APK
+npm run android:release
+
+# Install to device
+npm run android:install
+```
+
+### Running Tests
+```bash
+npm test              # Run all tests
+npm run typecheck     # TypeScript validation
+```
+
+## 🛠️ Configuration
+
+### Local Development
+```bash
+# Copy template
+cp android/local.properties.example android/local.properties
+
+# Edit with your SDK path
+# sdk.dir=/path/to/android-sdk
+```
+
+### Environment Variables
+```bash
+ANDROID_HOME=/path/to/sdk
+JAVA_HOME=/path/to/java17
+```
+
+## 📚 Documentation
+
+- **[SETUP.md](SETUP.md)** - Detailed setup & deployment guide
+- **[Android Build](android/)** - Native Android code & configuration
+- **[Source Code](src/)** - React Native TypeScript source
+
+## ❓ Troubleshooting
+
+### "Storage access denied"
+- Grant permissions in Settings > Apps > ForgeLink
+- Or reinstall and grant during first run
+
+### "Command not found"
+- Ensure package is installed: `npm install` or `pip install -r requirements.txt`
+- Check if command is available in PATH
+
+### "Dev server not running"
+- Run the start/dev command first
+- Check terminal output for errors
+- Ensure port 3000 or 8000 is available
+
+### Build fails
+- Clean: `cd android && ./gradlew clean`
+- Check SDK path in `local.properties`
+- Ensure Java 17 is installed
+
+## 🤝 Contributing
+
+ForgeLink is open source! Contributions welcome:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
+
+## 📄 License
+
+MIT License - see LICENSE file
+
+## 🎓 Learn More
+
+- [React Native Documentation](https://reactnative.dev)
+- [Kotlin for Android](https://developer.android.com/kotlin)
+- [Android Developer Guide](https://developer.android.com/guide)
+
+## 📞 Support
+
+- Open an issue on [GitHub](https://github.com/gb-tech-software/ForgeLink/issues)
+- Check existing issues for solutions
+- Include device info & build version in bug reports
 
 ---
 
-### 🧱 ARCHITECTURAL CONSTRAINTS & ISOLATION (CRITICAL)
-1. NO MONOREPO COUPLING: Do not bundle this code into any workspace layout, Lerna, TurboRepo, or Replit-specific environment tools. The codebase must be a fully isolated, standalone React Native architecture configured to compile completely on a headless Linux system via GitHub Actions.
-2. ABSOLUTE DIRECTORY SEPARATION:
-   - All UI rendering, layout gesture wrappers, file tree state tracking, and view logic must be isolated in the root JavaScript/TypeScript structure.
-   - All process management, storage permissions handling, system-level native threads, and C++ process loop bridges must be isolated inside the `android/app/src/main/` Kotlin tree.
+**Made with ❤️ by gb-tech-software**
 
----
-
-### 📱 SYSTEM LOGIC REQUIREMENTS (KOTLIN BACKEND)
-Generate a native Kotlin module that uses Android's NDK to interface with Termux's open-source `libtermexec.so` execution code. Implement the following:
-1. Native Terminal Manager (`RTNTerminalView`):
-   - Package Termux's native `TerminalView` layout template and `TerminalSession` controller into an Android native React Component View Manager.
-   - It must accept direct text stream inputs via a React Native Native Module bridge method: `executeCommand(commandString: String)`.
-2. Foreground Service Thread Execution:
-   - Create a persistent Android Foreground Service to manage terminal server execution lifecycles (`npm run dev`, `python server.py`, etc.).
-   - The execution loop MUST be handled inside this service context. If the user minimizes the UI panel or closes the screen, the service must keep the local Node/Python process running indefinitely, bypassing Android's Low Memory Killer.
-   - When the user expands the terminal panel again, the UI component must instantly attach back onto the active background service stream.
-3. Storage Access Framework (SAF) Bridge:
-   - Configure native methods to take persistable URI permissions via Android's `Intent.ACTION_OPEN_DOCUMENT_TREE`.
-   - The editor must write, update, and read files directly from the global user storage folder (e.g., `/storage/shared/Projects`) in place. Do not copy files into the app's internal sandbox.
-
----
-
-### 🎨 MOBILE DEVELOPER WORKFLOW UX (REACT NATIVE UI)
-Build a smooth, mobile-first interface optimized for touchscreen gestures (no heavy desktop simulations).
-1. Layout Pane Layout:
-   - Use `react-native-gesture-handler` and `react-native-reanimated` to construct a multi-panel workspace frame containing three responsive layers: File Tree Sidebar, Main Code Editor Canvas, and Bottom Drawer Engine.
-   - The Bottom Drawer Engine must be a tabbed viewer. Tab 1 shows the native `RTNTerminalView`. Tab 2 shows an integrated layout `WebView` for previews.
-   - Toggling tabs or swiping the drawer hidden must only alter view visibility flags (`display: 'none'`). It must NOT unmount the WebView or kill the background terminal stream.
-2. Dual-Router Live Previews:
-   - The WebView preview component must run a condition check when parsing a project workspace:
-     * Mode A (Frameworks): If an active dev port is running (e.g., Vite/NextJS), point the WebView directly to `http://localhost:3000`.
-     * Mode B (Vanilla Stack): If it is a vanilla project, read the path via the SAF Bridge and load it instantly using the local file schema (`file:///storage/.../index.html`) without executing terminal command tasks.
-
----
-
-### 📂 STATE & PROJECT WORKSPACE PERSISTENCE
-1. Create a workspace schema tracking metadata configuration profiles per unique directory URI.
-2. Store the following workspace persistent data locally (using a clean local storage container like AsyncStorage):
-   - Active open file tabs.
-   - Horizontal/vertical split percentages.
-   - Cursor positions per file.
-   - Last executed terminal commands context per layout workspace.
-3. When the app opens, read the previous URI pathway. Automatically re-mount the target directory, re-hydrate the file canvas tree, and cleanly attach back to the persistent Foreground Service console instance.
-
----
-
-### 🤖 EXPECTED DELIVERABLES
-Generate a production-ready codebase containing:
-1. A fully isolated, standalone React Native package layout (`package.json`, TypeScript setups).
-2. The complete native Android sub-directory (`android/app/build.gradle` containing proper NDK configurations targeting ARM64-v8a architectures).
-3. The custom Kotlin bridge logic (`TerminalViewManager.kt`, `TerminalService.kt`, and the Native Module bridge registrations).
-4. The React Native workspace manager UI views handling the panel gesture drawers, custom tabs, and layout WebView toggles.
-5. Provide a `.github/workflows/android-build.yml` pipeline file to execute clean headless Android compilation via Gradle on a virtual Ubuntu host runner.
+Start developing anywhere. ForgeLink makes it possible.

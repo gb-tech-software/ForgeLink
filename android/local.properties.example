@@ -1,0 +1,11 @@
+# Android SDK Configuration
+# Uncomment and update the path to your Android SDK installation
+# For Linux:
+# sdk.dir=/home/username/Android/Sdk
+# For macOS:
+# sdk.dir=/Users/username/Library/Android/sdk
+# For Windows:
+# sdk.dir=C:\\Users\\username\\AppData\\Local\\Android\\sdk
+
+# GitHub Actions CI will set this automatically
+# Local development: Copy this to local.properties and update the path
