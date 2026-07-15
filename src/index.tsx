@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { NativeModules } from 'react-native';
 
@@ -108,6 +108,7 @@ const App = () => {
   const previewUri = useMemo(() => derivePreviewUri(workspace.directoryUri, 'http://localhost:3000'), [workspace.directoryUri]);
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.sidebar}>
@@ -180,6 +181,7 @@ const App = () => {
         </GestureDetector>
       </View>
     </SafeAreaView>
+    </GestureHandlerRootView>
   );
 };
 
