@@ -9,6 +9,6 @@ class MainActivity : ReactActivity() {
     override fun getMainComponentName(): String = "ForgeLink"
 
     override fun createReactActivityDelegate(): ReactActivityDelegate {
-        return DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled())
+        return DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
     }
 }
