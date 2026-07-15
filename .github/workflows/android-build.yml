@@ -127,6 +127,7 @@ jobs:
       - name: Build Android (Release)
         working-directory: android
         run: ./gradlew assembleRelease --stacktrace
+       
       - name: Upload Release APK
         if: success()
         uses: actions/upload-artifact@v4
