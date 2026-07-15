@@ -60,6 +60,15 @@ jobs:
             gradle wrapper --gradle-version 8.10.2
           fi
           chmod +x ./gradlew
+      - name: Bundle JavaScript (Debug)
+        run: |
+          mkdir -p android/app/src/main/assets
+          node_modules/.bin/react-native bundle \
+            --platform android \
+            --dev true \
+            --entry-file index.js \
+            --bundle-output android/app/src/main/assets/index.android.bundle \
+            --assets-dest android/app/src/main/res
       - name: Build Android (Debug)
         working-directory: android
         run: ./gradlew assembleDebug --stacktrace
@@ -69,6 +78,15 @@ jobs:
         with:
           name: forgelink-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Bundle JavaScript (Release)
+        run: |
+          mkdir -p android/app/src/main/assets
+          node_modules/.bin/react-native bundle \
+            --platform android \
+            --dev false \
+            --entry-file index.js \
+            --bundle-output android/app/src/main/assets/index.android.bundle \
+            --assets-dest android/app/src/main/res
       - name: Build Android (Release)
         working-directory: android
         run: ./gradlew assembleRelease --stacktrace

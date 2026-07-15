@@ -11,7 +11,7 @@ import com.facebook.soloader.SoLoader
 
 class MainApplication : Application(), ReactApplication {
     override val reactNativeHost: ReactNativeHost = object : DefaultReactNativeHost(this) {
-        override fun getUseDeveloperSupport(): Boolean = true
+        override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
 
         override fun getPackages(): List<ReactPackage> {
             return listOf(ForgeLinkPackage())
