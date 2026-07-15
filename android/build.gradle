@@ -8,3 +8,5 @@ buildscript {
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24'
     }
 }
+
+apply plugin: "com.facebook.react.rootproject"
