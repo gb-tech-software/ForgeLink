@@ -28,6 +28,7 @@
     "@types/react-native": "^0.73.0",
     "react-native-codegen": "^0.71.0",
     "@react-native-community/cli":"^20.2.0",
+    "@react-native/metro-config": "^0.76.0",
     "typescript": "^5.5.4"
   }
 }
