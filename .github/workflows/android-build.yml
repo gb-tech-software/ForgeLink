@@ -63,6 +63,7 @@ jobs:
         run: |
           mkdir -p /tmp/gradle-init
           cd /tmp/gradle-init
+          gradle init
           gradle wrapper --gradle-version 8.10.2
           mkdir -p $GITHUB_WORKSPACE/android/gradle/wrapper
           cp gradlew             $GITHUB_WORKSPACE/android/gradlew
