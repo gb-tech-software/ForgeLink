@@ -43,7 +43,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.10.2'
+          gradle-version: '8.8'
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
       - name: Accept Android SDK licenses
@@ -64,7 +64,7 @@ jobs:
           mkdir -p /tmp/gradle-init
           cd /tmp/gradle-init
           gradle init
-          gradle wrapper --gradle-version 8.10.2
+          gradle wrapper --gradle-version 8.8
           mkdir -p $GITHUB_WORKSPACE/android/gradle/wrapper
           cp gradlew             $GITHUB_WORKSPACE/android/gradlew
           cp gradlew.bat         $GITHUB_WORKSPACE/android/gradlew.bat
