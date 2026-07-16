@@ -9,7 +9,7 @@ ext.hermesEnabled = true
 
 android {
     namespace 'com.forgelink'
-    compileSdkVersion 34
+    compileSdkVersion 35
 
     defaultConfig {
         applicationId 'com.forgelink'
