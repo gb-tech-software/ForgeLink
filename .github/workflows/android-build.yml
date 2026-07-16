@@ -47,49 +47,15 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
       - name: Accept Android SDK licenses
-        run: |
-          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
+        run: yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses
       - name: Install Android SDK packages
-        run: |
-          sdkmanager --sdk_root=$ANDROID_HOME "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+        run: sdkmanager --sdk_root=$ANDROID_HOME "platforms;android-34" "build-tools;34.0.0" "platform-tools"
       - name: Create local.properties
-        run: |
-          echo "sdk.dir=${ANDROID_HOME}" > android/local.properties
-      - name: Patch React Native Gradle Plugin for CI
-        # The @react-native/gradle-plugin npm package ships only Kotlin source
-        # files — no pre-compiled JARs. Gradle compiles it at build time via
-        # includeBuild. Its settings.gradle.kts applies
-        # foojay-resolver-convention, which calls the Foojay API to discover
-        # JDK distributions. In CI this can time out or fail, silently killing
-        # the entire included build and producing "Plugin not found".
-        #
-        # Fix: remove the foojay plugin line, then tell Gradle (via
-        # GRADLE_USER_HOME/gradle.properties) to use the pre-installed JDK 17
-        # from the environment instead of auto-downloading.
-        run: |
-          SETTINGS="node_modules/@react-native/gradle-plugin/settings.gradle.kts"
-          if [ -f "$SETTINGS" ]; then
-            sed -i '/foojay-resolver-convention/d' "$SETTINGS"
-            echo "Patched foojay out of: $SETTINGS"
-          else
-            echo "WARNING: $SETTINGS not found — plugin may not be installed"
-            ls node_modules/@react-native/ 2>/dev/null || echo "  @react-native scope missing entirely"
-          fi
-
-          mkdir -p "$GRADLE_USER_HOME"
-          cat >> "$GRADLE_USER_HOME/gradle.properties" << 'EOF'
-          org.gradle.java.installations.auto-download=false
-          org.gradle.java.installations.fromEnv=JAVA_HOME_17_X64
-          EOF
+        run: echo "sdk.dir=${ANDROID_HOME}" > android/local.properties
       - name: Generate Gradle wrapper
-        # Run gradle wrapper in an empty temp directory so it has no project
-        # build scripts to evaluate — avoids the chicken-and-egg where
-        # generating the wrapper requires the RN Gradle plugin to already
-        # be loadable, which in turn requires the wrapper to exist first.
         run: |
           mkdir -p /tmp/gradle-init
           cd /tmp/gradle-init
-          gradle init
           gradle wrapper --gradle-version 8.8
           mkdir -p $GITHUB_WORKSPACE/android/gradle/wrapper
           cp gradlew             $GITHUB_WORKSPACE/android/gradlew
@@ -127,7 +93,6 @@ jobs:
       - name: Build Android (Release)
         working-directory: android
         run: ./gradlew assembleRelease --stacktrace
-       
       - name: Upload Release APK
         if: success()
         uses: actions/upload-artifact@v4

@@ -9,4 +9,11 @@ buildscript {
     }
 }
 
-apply plugin: "com.facebook.react.rootproject"
+// Replaces: apply plugin: "com.facebook.react.rootproject"
+// ReactRootProjectPlugin only does this — make each non-app subproject
+// evaluate after :app so it can read :app's properties.
+subprojects {
+    if (it.path != ':app') {
+        evaluationDependsOn(':app')
+    }
+}
