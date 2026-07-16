@@ -60,7 +60,7 @@ ForgeLink is built with:
 ```
 ForgeLink/
 ├── src/                    # React Native UI & logic
-│   ├── index.tsx          # Main app component
+│   ├── index.tsx          # Main app component + CrashReportScreen
 │   ├── commands.ts        # Command presets
 │   ├── workspace.js       # Workspace state helpers
 │   ├── projectDetection.js # Project type detection
@@ -70,13 +70,47 @@ ForgeLink/
 │   └── app/src/main/java/com/forgelink/
 │       ├── MainActivity.kt
 │       ├── MainApplication.kt
+│       ├── CrashReporter.kt         # ⚠️  In-process crash capture — see docs/crash-reporter.md
 │       ├── TerminalService.kt       # Process execution
-│       ├── ForgeLinkNativeModule.kt # React bridge
+│       ├── ForgeLinkNativeModule.kt # React bridge (includes crash reporter methods)
 │       ├── StorageAccessBridge.kt   # File system access
 │       └── ...
+├── docs/
+│   └── crash-reporter.md  # ⚠️  Read before touching crash reporter code
 ├── .github/workflows/     # GitHub Actions CI/CD
 └── SETUP.md              # Detailed setup guide
 ```
+
+### ⚠️ Non-standard Gradle configuration
+
+ForgeLink does **not** use the `com.facebook.react` Gradle plugin. The plugin
+ships as Kotlin source inside `@react-native/gradle-plugin` and requires
+`includeBuild` compilation — which fails in CI. Its behaviours are inlined:
+
+- Native packages are added as Gradle subprojects in `settings.gradle`
+- `PackageList.kt` is hand-written (registers Reanimated, Gesture Handler, WebView)
+- `app/build.gradle` does **not** have `apply plugin: "com.facebook.react"`
+
+This introduced a runtime launch crash currently under investigation. See
+`docs/crash-reporter.md` for the full diagnostic setup.
+
+### ⚠️ In-app crash reporter
+
+Because the developer works from **Termux on-device** (where `adb logcat` behaves
+differently from a desktop ADB connection), an in-process crash reporter is the
+only way to read native JVM stack traces:
+
+| Layer | File | What it catches |
+|---|---|---|
+| JVM exception handler | `CrashReporter.kt` | Any Java/Kotlin throw on any thread |
+| JS global handler | `index.js` (`ErrorUtils`) | Unhandled JS errors & fatal Promise rejections |
+| On-screen display | `src/index.tsx` (`CrashReportScreen`) | Shows report on next launch |
+
+Report file: `/sdcard/Android/data/com.forgelink/files/crash_report.txt`  
+(readable in any file manager, no root required on Android 10+)
+
+**Do not remove** the crash reporter until the root-cause crash is fixed and an
+alternative diagnostics path is in place. See `docs/crash-reporter.md`.
 
 ## 🚀 Features
 

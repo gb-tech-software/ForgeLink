@@ -1,15 +1,103 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ScrollView, TextInput, Alert, NativeModules } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { NativeModules } from 'react-native';
 
 import { commandPresets } from './commands';
 import { createWorkspaceSeed, derivePreviewUri, normalizeWorkspace } from './workspace';
 
 const { ForgeLinkNative } = NativeModules;
+
+// ---------------------------------------------------------------------------
+// CrashReportScreen
+//
+// WHY THIS EXISTS — DO NOT REMOVE WITHOUT READING docs/crash-reporter.md
+// -----------------------------------------------------------------------
+// ForgeLink uses a non-standard Gradle build (no ReactPlugin) which introduced
+// a runtime crash at launch.  The developer works from Termux on-device where
+// `adb logcat` does not behave like a desktop ADB connection, so there is no
+// other way to read native JVM stack traces.
+//
+// On every cold launch, App's first useEffect calls
+// ForgeLinkNative.readCrashReport().  If the native JVM handler
+// (CrashReporter.kt) or the JS ErrorUtils handler (index.js) wrote a report
+// during the previous run, this component is rendered instead of the normal
+// app so the developer can read the full exception on-device.
+//
+// The report file lives at:
+//   /sdcard/Android/data/com.forgelink/files/crash_report.txt
+// and is also readable in any file manager (no root needed on Android 10+).
+//
+// "Dismiss & continue" deletes the file via ForgeLinkNative.clearCrashReport()
+// and re-renders the normal app.
+//
+// Related files (all must be kept in sync):
+//   CrashReporter.kt            — writes / appends / reads / clears the file
+//   ForgeLinkNativeModule.kt    — bridge: appendCrashLog, readCrashReport, clearCrashReport
+//   MainApplication.kt          — installs the JVM handler before SoLoader.init()
+//   index.js                    — installs the JS ErrorUtils handler before AppRegistry
+//   docs/crash-reporter.md      — full design rationale and removal criteria
+// ---------------------------------------------------------------------------
+function CrashReportScreen({
+  report,
+  onDismiss,
+}: {
+  report: string;
+  onDismiss: () => void;
+}) {
+  return (
+    <SafeAreaView style={cr.root}>
+      <View style={cr.header}>
+        <Text style={cr.title}>💥 Previous Crash Detected</Text>
+        <Text style={cr.subtitle}>
+          The app crashed last time it ran. The full report is below.{'\n'}
+          File also saved to:{'\n'}
+          <Text style={cr.path}>Android/data/com.forgelink/files/crash_report.txt</Text>
+        </Text>
+      </View>
+      <ScrollView style={cr.scroll} contentContainerStyle={cr.scrollContent}>
+        <Text style={cr.report} selectable>{report}</Text>
+      </ScrollView>
+      <TouchableOpacity
+        style={cr.button}
+        onPress={async () => {
+          try { await ForgeLinkNative?.clearCrashReport?.(); } catch (_) {}
+          onDismiss();
+        }}
+      >
+        <Text style={cr.buttonText}>Dismiss &amp; continue</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+}
+
+const cr = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#0f172a' },
+  header: { padding: 20, borderBottomWidth: 1, borderBottomColor: '#1e293b' },
+  title: { color: '#f87171', fontSize: 20, fontWeight: '700', marginBottom: 8 },
+  subtitle: { color: '#94a3b8', fontSize: 13, lineHeight: 20 },
+  path: { color: '#38bdf8', fontFamily: 'monospace' },
+  scroll: { flex: 1 },
+  scrollContent: { padding: 16 },
+  report: {
+    color: '#e2e8f0',
+    fontSize: 11,
+    fontFamily: 'monospace',
+    lineHeight: 18,
+  },
+  button: {
+    margin: 16,
+    paddingVertical: 14,
+    backgroundColor: '#1e40af',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+});
+
+// ---------------------------------------------------------------------------
 
 type WorkspaceProfile = {
   id: string;
@@ -23,6 +111,23 @@ type WorkspaceProfile = {
 };
 
 const App = () => {
+  // Crash report state — checked once on mount before anything else renders.
+  const [crashReport, setCrashReport] = useState<string | null>(null);
+  const [crashChecked, setCrashChecked] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const report: string | null = await ForgeLinkNative?.readCrashReport?.();
+        if (report) setCrashReport(report);
+      } catch (_) {
+        // If the native module isn't available yet, proceed normally
+      } finally {
+        setCrashChecked(true);
+      }
+    })();
+  }, []);
+
   const [workspace, setWorkspace] = useState<WorkspaceProfile>(() => createWorkspaceSeed());
   const [activeTab, setActiveTab] = useState<'terminal' | 'preview'>('terminal');
   const [drawerOpen, setDrawerOpen] = useState(true);
@@ -106,6 +211,16 @@ const App = () => {
 
   const activeFileContent = workspace.files[workspace.activeFile] || '';
   const previewUri = useMemo(() => derivePreviewUri(workspace.directoryUri, 'http://localhost:3000'), [workspace.directoryUri]);
+
+  // Show crash report screen if a previous crash was detected
+  if (crashChecked && crashReport) {
+    return (
+      <CrashReportScreen
+        report={crashReport}
+        onDismiss={() => setCrashReport(null)}
+      />
+    );
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

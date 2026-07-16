@@ -24,6 +24,23 @@ class MainApplication : Application(), ReactApplication {
 
     override fun onCreate() {
         super.onCreate()
+
+        // ── Crash Reporter ────────────────────────────────────────────────────
+        // MUST be installed before SoLoader.init() so that any JVM exception
+        // thrown during native library loading (e.g. UnsatisfiedLinkError from
+        // libreanimated.so, which loads during bridge initialisation) is caught
+        // and written to crash_report.txt before the process exits.
+        //
+        // This reporter exists because ForgeLink uses a non-standard Gradle
+        // build (no ReactPlugin) that introduced a launch-time crash, and the
+        // developer's Termux environment cannot capture `adb logcat` the way a
+        // desktop ADB connection would. It is the sole diagnostics mechanism.
+        //
+        // See docs/crash-reporter.md and CrashReporter.kt for full details.
+        // DO NOT remove or reorder this call without reading that document.
+        // ─────────────────────────────────────────────────────────────────────
+        CrashReporter.install(this)
+
         SoLoader.init(this, OpenSourceMergedSoMapping)
     }
 }

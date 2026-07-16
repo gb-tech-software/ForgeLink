@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 
-
 // Required by react-native-reanimated's build.gradle, which reads
 // appProject.hermesEnabled to decide whether to link Hermes or JSC.
 // This was previously set by ReactPlugin; we set it manually since we
