@@ -17,3 +17,18 @@ subprojects {
         evaluationDependsOn(':app')
     }
 }
+
+// react-native-gesture-handler and react-native-webview (and other packages
+// built before RN 0.71) declare a Maven dependency on
+// com.facebook.react:react-native:+. That artifact was retired in RN 0.71+
+// and replaced by com.facebook.react:react-android. The ReactPlugin normally
+// injects this substitution automatically; because we don't apply ReactPlugin
+// we add it here explicitly so Gradle resolves these transitive dependencies
+// against the local node_modules maven repo, where react-android:0.76.0 lives.
+allprojects {
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute module('com.facebook.react:react-native') using module('com.facebook.react:react-android:0.76.0')
+        }
+    }
+}
