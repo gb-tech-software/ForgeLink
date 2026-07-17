@@ -20,17 +20,15 @@ subprojects {
 
 // react-native-reanimated's own build.gradle pins compileOptions to Java 8,
 // but its source code uses switch expressions (Java 14+) and instanceof pattern
-// matching (Java 16+). Override to Java 17 (the JDK version in CI) for every
-// Android library subproject after it has evaluated (so we win over its own
-// compileOptions declaration).
+// matching (Java 16+). Override to Java 17 for every Android library subproject.
+// plugins.withId is a lazy hook that fires when the plugin is applied — it avoids
+// the "already evaluated" error that afterEvaluate hits due to evaluationDependsOn.
 subprojects {
-    afterEvaluate {
-        if (it.plugins.hasPlugin('com.android.library')) {
-            android {
-                compileOptions {
-                    sourceCompatibility JavaVersion.VERSION_17
-                    targetCompatibility JavaVersion.VERSION_17
-                }
+    plugins.withId('com.android.library') {
+        android {
+            compileOptions {
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
             }
         }
     }
