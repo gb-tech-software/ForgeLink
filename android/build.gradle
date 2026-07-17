@@ -18,6 +18,24 @@ subprojects {
     }
 }
 
+// react-native-reanimated's own build.gradle pins compileOptions to Java 8,
+// but its source code uses switch expressions (Java 14+) and instanceof pattern
+// matching (Java 16+). Override to Java 17 (the JDK version in CI) for every
+// Android library subproject after it has evaluated (so we win over its own
+// compileOptions declaration).
+subprojects {
+    afterEvaluate {
+        if (it.plugins.hasPlugin('com.android.library')) {
+            android {
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_17
+                    targetCompatibility JavaVersion.VERSION_17
+                }
+            }
+        }
+    }
+}
+
 // ReactPlugin normally does two things we must replicate manually:
 //
 // 1. Registers node_modules/react-native/android as a local Maven repo.
