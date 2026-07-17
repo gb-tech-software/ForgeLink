@@ -18,17 +18,31 @@ subprojects {
     }
 }
 
-// react-native-gesture-handler and react-native-webview (and other packages
-// built before RN 0.71) declare a Maven dependency on
-// com.facebook.react:react-native:+. That artifact was retired in RN 0.71+
-// and replaced by com.facebook.react:react-android. The ReactPlugin normally
-// injects this substitution automatically; because we don't apply ReactPlugin
-// we add it here explicitly so Gradle resolves these transitive dependencies
-// against the local node_modules maven repo, where react-android:0.76.0 lives.
+// ReactPlugin normally does two things we must replicate manually:
+//
+// 1. Registers node_modules/react-native/android as a local Maven repo.
+//    This is where react-android and hermes-android are published as Maven
+//    artifacts by the RN npm package itself.
+//
+// 2. Injects dependency substitution rules so that:
+//    a) Old-style "com.facebook.react:react-native:+" (used by gesture-handler,
+//       webview, etc.) is remapped to the current react-android artifact.
+//    b) react-native-reanimated requests react-android and hermes-android with
+//       an empty version (its reactNativeVersion ext property is unset without
+//       the plugin). Substitution rules pin these to 0.76.0 so Gradle can
+//       resolve them against the local Maven repo.
 allprojects {
+    repositories {
+        maven { url "$rootDir/../node_modules/react-native/android" }
+    }
     configurations.all {
         resolutionStrategy.dependencySubstitution {
+            // Old packages that still reference the retired react-native artifact
             substitute module('com.facebook.react:react-native') using module('com.facebook.react:react-android:0.76.0')
+            // reanimated references these directly; pin them so an empty/dynamic
+            // version request resolves to the copy in the local Maven repo
+            substitute module('com.facebook.react:react-android') using module('com.facebook.react:react-android:0.76.0')
+            substitute module('com.facebook.react:hermes-android') using module('com.facebook.react:hermes-android:0.76.0')
         }
     }
 }
