@@ -18,17 +18,36 @@ subprojects {
     }
 }
 
-// react-native-reanimated's own build.gradle pins compileOptions to Java 8,
-// but its source code uses switch expressions (Java 14+) and instanceof pattern
-// matching (Java 16+). Override to Java 17 for every Android library subproject.
-// plugins.withId is a lazy hook that fires when the plugin is applied — it avoids
-// the "already evaluated" error that afterEvaluate hits due to evaluationDependsOn.
-subprojects {
-    plugins.withId('com.android.library') {
-        android {
-            compileOptions {
-                sourceCompatibility JavaVersion.VERSION_17
-                targetCompatibility JavaVersion.VERSION_17
+// Ensure Java 17 and consistent Kotlin jvmTarget across all Android modules (app + libraries).
+// Some 3rd-party modules (notably react-native-reanimated) pin compileOptions to Java 8 while
+// their source uses modern Java language features (switch expressions, pattern matching).
+// We enforce Java 17 after the Android plugin is applied so module-level config cannot
+// silently win due to evaluation order.
+subprojects { proj ->
+    proj.plugins.whenPluginAdded { plugin ->
+        if (proj.plugins.hasPlugin('com.android.application') || proj.plugins.hasPlugin('com.android.library')) {
+            proj.afterEvaluate {
+                // Configure Android compile options
+                proj.android.compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_17
+                    targetCompatibility JavaVersion.VERSION_17
+                    // Enable core library desugaring for newer JDK APIs when needed on older Android runtimes
+                    coreLibraryDesugaringEnabled true
+                }
+
+                // Ensure Kotlin JVM target matches
+                try {
+                    proj.android.kotlinOptions {
+                        jvmTarget = '17'
+                    }
+                } catch (ignored) {
+                    // Kotlin plugin may not be applied in some library projects
+                }
+
+                // Also force JavaCompile tasks to use release=17 where possible — this is a robust fallback
+                proj.tasks.withType(JavaCompile) { JavaCompile compileTask ->
+                    compileTask.options.release = 17
+                }
             }
         }
     }
