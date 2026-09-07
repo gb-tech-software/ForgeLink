@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+# gradlew (generated)
+# Minimal wrapper script generated for CI use. This is a lightweight shim that
+# downloads a matching Gradle distribution if not present. It is intentionally
+# simple so it can be checked into this repo for developers and CI that don't
+# generate the wrapper themselves.
+
+GRADLE_WRAPPER_VERSION=8.8
+GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
+
+# Directory where this script lives
+DIR="$(cd "$(dirname "$0")" && pwd)"
+
+WRAPPER_DIR="$DIR/gradle/wrapper"
+DIST_DIR="$GRADLE_USER_HOME/wrapper/dists/gradle-${GRADLE_WRAPPER_VERSION}-bin"
+DIST_ZIP="$DIST_DIR/gradle-${GRADLE_WRAPPER_VERSION}-bin.zip"
+DIST_UNPACK="$DIST_DIR/gradle-${GRADLE_WRAPPER_VERSION}
+
+# If gradle is available on PATH, prefer it (helps in CI where action installs gradle)
+if command -v gradle >/dev/null 2>&1; then
+  exec gradle "$@"
+fi
+
+# Fallback to downloading the distribution
+mkdir -p "$DIST_DIR"
+
+if [ ! -f "$DIST_ZIP" ]; then
+  echo "Downloading Gradle ${GRADLE_WRAPPER_VERSION}..."
+  URL="https://services.gradle.org/distributions/gradle-${GRADLE_WRAPPER_VERSION}-bin.zip"
+  if command -v curl >/dev/null 2>&1; then
+    curl -L -o "$DIST_ZIP" "$URL"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -O "$DIST_ZIP" "$URL"
+  else
+    echo "Neither curl nor wget available to download Gradle. Please install one, or ensure gradle is on PATH."
+    exit 1
+  fi
+fi
+
+# Unpack
+if [ ! -d "$DIST_DIR/gradle-${GRADLE_WRAPPER_VERSION}" ]; then
+  unzip -q "$DIST_ZIP" -d "$DIST_DIR"
+fi
+
+# Execute the gradle binary
+exec "$DIST_DIR/gradle-${GRADLE_WRAPPER_VERSION}/bin/gradle" "$@"
